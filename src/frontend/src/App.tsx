@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { useState } from "react";
 import AdminPage from "./pages/AdminPage";
 import DonatePage from "./pages/DonatePage";
+import DownloadsPage from "./pages/DownloadsPage";
 import HomePage from "./pages/HomePage";
 import JoinPage from "./pages/JoinPage";
 import PrayersPage from "./pages/PrayersPage";
@@ -18,6 +19,7 @@ export type Page =
   | { name: "support" }
   | { name: "donate" }
   | { name: "join" }
+  | { name: "downloads" }
   | { name: "song"; id: bigint }
   | { name: "admin" };
 
@@ -38,6 +40,7 @@ export default function App() {
       {page.name === "support" && <SupportPage navigate={navigate} />}
       {page.name === "donate" && <DonatePage navigate={navigate} />}
       {page.name === "join" && <JoinPage navigate={navigate} />}
+      {page.name === "downloads" && <DownloadsPage navigate={navigate} />}
       {page.name === "song" && (
         <SongDetailPage id={page.id} navigate={navigate} />
       )}

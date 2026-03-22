@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Cross,
+  Download,
   HandHeart,
   Heart,
   Menu,
@@ -29,6 +30,11 @@ const NAV_ITEMS: { label: string; page: Page; icon: React.ReactNode }[] = [
     label: "Prayers",
     page: { name: "prayers" },
     icon: <HandHeart className="h-3.5 w-3.5" />,
+  },
+  {
+    label: "Downloads",
+    page: { name: "downloads" },
+    icon: <Download className="h-3.5 w-3.5" />,
   },
   {
     label: "Upload",

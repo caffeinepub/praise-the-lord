@@ -1,5 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Song, SongId, SongInput, Type } from "../backend";
+import type {
+  DownloadItem,
+  DownloadItemId,
+  DownloadItemInput,
+  NewsPost,
+  NewsPostId,
+  NewsPostInput,
+  Song,
+  SongId,
+  SongInput,
+  Type,
+} from "../backend";
 import { useActor } from "./useActor";
 
 export function useAllSongs() {
@@ -101,6 +112,105 @@ export function useDeleteSong() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["songs"] });
+    },
+  });
+}
+
+// News
+export function useAllNewsPosts() {
+  const { actor, isFetching } = useActor();
+  return useQuery<NewsPost[]>({
+    queryKey: ["news"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllNewsPosts();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAddNewsPost() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: NewsPostInput) => {
+      if (!actor) throw new Error("No actor");
+      return actor.addNewsPost(input);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["news"] });
+    },
+  });
+}
+
+export function useUpdateNewsPost() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      input,
+    }: { id: NewsPostId; input: NewsPostInput }) => {
+      if (!actor) throw new Error("No actor");
+      return actor.updateNewsPost(id, input);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["news"] });
+    },
+  });
+}
+
+export function useDeleteNewsPost() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: NewsPostId) => {
+      if (!actor) throw new Error("No actor");
+      return actor.deleteNewsPost(id);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["news"] });
+    },
+  });
+}
+
+// Downloads
+export function useAllDownloadItems() {
+  const { actor, isFetching } = useActor();
+  return useQuery<DownloadItem[]>({
+    queryKey: ["downloads"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllDownloadItems();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useAddDownloadItem() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: DownloadItemInput) => {
+      if (!actor) throw new Error("No actor");
+      return actor.addDownloadItem(input);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["downloads"] });
+    },
+  });
+}
+
+export function useDeleteDownloadItem() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: DownloadItemId) => {
+      if (!actor) throw new Error("No actor");
+      return actor.deleteDownloadItem(id);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["downloads"] });
     },
   });
 }

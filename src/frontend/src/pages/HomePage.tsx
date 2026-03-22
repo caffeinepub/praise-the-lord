@@ -6,6 +6,7 @@ import {
   HandHeart,
   Heart,
   Music2,
+  Newspaper,
   Phone,
   Search,
   Upload,
@@ -16,7 +17,7 @@ import type { Page } from "../App";
 import { type Song, Type } from "../backend";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import { useAllSongs, useIsAdmin } from "../hooks/useQueries";
+import { useAllNewsPosts, useAllSongs, useIsAdmin } from "../hooks/useQueries";
 import { SAMPLE_PRAYERS } from "./PrayersPage";
 
 const SAMPLE_SONGS: Song[] = [
@@ -100,6 +101,7 @@ export default function HomePage({ navigate }: HomePageProps) {
   const [search, setSearch] = useState("");
   const { data: songs } = useAllSongs();
   const { data: isAdmin } = useIsAdmin();
+  const { data: newsPosts } = useAllNewsPosts();
 
   const displaySongs =
     songs && songs.length > 0 ? songs.slice(0, 6) : SAMPLE_SONGS;
@@ -122,6 +124,13 @@ export default function HomePage({ navigate }: HomePageProps) {
     : [];
 
   const noResults = q && songResults.length === 0 && prayerResults.length === 0;
+
+  // Latest 3 news posts (most recent first)
+  const latestNews = newsPosts
+    ? [...newsPosts]
+        .sort((a, b) => Number(b.createdAt - a.createdAt))
+        .slice(0, 3)
+    : [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -282,6 +291,47 @@ export default function HomePage({ navigate }: HomePageProps) {
                 ))}
               </motion.div>
 
+              {/* Latest News Section */}
+              {latestNews.length > 0 && (
+                <div className="mb-10">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Newspaper className="h-5 w-5 text-primary" />
+                    <h2 className="font-display text-xl font-bold">
+                      Latest News
+                    </h2>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {latestNews.map((post, i) => (
+                      <motion.div
+                        key={post.id.toString()}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.07 * i }}
+                        data-ocid={`home.item.${i + 1}`}
+                      >
+                        <div className="p-4 bg-card border border-primary/20 rounded-lg h-full">
+                          <p className="font-display font-bold text-sm leading-snug mb-1">
+                            {post.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {new Date(
+                              Number(post.createdAt / 1_000_000n),
+                            ).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </p>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {post.body}
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Recent Songs */}
               <div className="mb-10">
                 <div className="flex items-center justify-between mb-4">
@@ -309,7 +359,7 @@ export default function HomePage({ navigate }: HomePageProps) {
                       <Card
                         className="group cursor-pointer hover:shadow-missal transition-all duration-200 border-border/70 bg-card"
                         onClick={() => navigate({ name: "song", id: song.id })}
-                        data-ocid={`home.item.${i + 1}`}
+                        data-ocid={`home.item.${i + 4}`}
                       >
                         <CardHeader className="pb-2">
                           <h3 className="font-display text-base font-semibold leading-snug group-hover:text-primary transition-colors line-clamp-2">
@@ -351,7 +401,7 @@ export default function HomePage({ navigate }: HomePageProps) {
                       type="button"
                       onClick={() => navigate({ name: "prayers" })}
                       className="text-left p-4 bg-card border border-blue-100 rounded-lg hover:shadow-card transition-shadow"
-                      data-ocid={`home.item.${i + 4}`}
+                      data-ocid={`home.item.${i + 7}`}
                     >
                       <div className="flex items-center gap-2 mb-1.5">
                         <HandHeart className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />

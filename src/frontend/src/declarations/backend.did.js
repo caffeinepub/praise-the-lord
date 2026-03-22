@@ -19,11 +19,22 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const DownloadItemInput = IDL.Record({
+  'title' : IDL.Text,
+  'fileBlob' : ExternalBlob,
+  'description' : IDL.Text,
+});
+export const DownloadItemId = IDL.Nat;
+export const NewsPostInput = IDL.Record({
+  'title' : IDL.Text,
+  'body' : IDL.Text,
+});
+export const NewsPostId = IDL.Nat;
 export const Section = IDL.Record({
   'title' : IDL.Text,
   'lyrics' : IDL.Vec(IDL.Text),
 });
-export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Type = IDL.Variant({
   'lent' : IDL.Null,
   'easter' : IDL.Null,
@@ -45,7 +56,36 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const MembershipId = IDL.Nat;
+export const DevotionalPrayer = IDL.Record({
+  'id' : IDL.Nat,
+  'title' : IDL.Text,
+  'content' : IDL.Vec(Section),
+});
 export const Time = IDL.Int;
+export const DownloadItem = IDL.Record({
+  'id' : DownloadItemId,
+  'title' : IDL.Text,
+  'createdAt' : Time,
+  'fileBlob' : ExternalBlob,
+  'description' : IDL.Text,
+});
+export const MembershipApplication = IDL.Record({
+  'id' : MembershipId,
+  'name' : IDL.Text,
+  'submittedAt' : Time,
+  'email' : IDL.Text,
+  'message' : IDL.Text,
+  'phone' : IDL.Text,
+  'parish' : IDL.Text,
+});
+export const NewsPost = IDL.Record({
+  'id' : NewsPostId,
+  'title' : IDL.Text,
+  'body' : IDL.Text,
+  'createdAt' : Time,
+  'updatedAt' : Time,
+});
 export const Song = IDL.Record({
   'id' : SongId,
   'title' : IDL.Text,
@@ -55,6 +95,14 @@ export const Song = IDL.Record({
   'updatedAt' : Time,
   'musicSheet' : IDL.Opt(ExternalBlob),
   'category' : Type,
+});
+export const UserProfile = IDL.Record({ 'name' : IDL.Text });
+export const MembershipApplicationInput = IDL.Record({
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+  'message' : IDL.Text,
+  'phone' : IDL.Text,
+  'parish' : IDL.Text,
 });
 
 export const idlService = IDL.Service({
@@ -85,15 +133,72 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addDownloadItem' : IDL.Func([DownloadItemInput], [DownloadItemId], []),
+  'addNewsPost' : IDL.Func([NewsPostInput], [NewsPostId], []),
   'addSong' : IDL.Func([SongInput], [SongId], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'deleteDownloadItem' : IDL.Func([DownloadItemId], [], []),
+  'deleteMembershipApplication' : IDL.Func([MembershipId], [], []),
+  'deleteNewsPost' : IDL.Func([NewsPostId], [], []),
   'deleteSong' : IDL.Func([SongId], [], []),
+  'getAllDevotionalPrayers' : IDL.Func(
+      [],
+      [IDL.Vec(DevotionalPrayer)],
+      ['query'],
+    ),
+  'getAllDownloadItems' : IDL.Func([], [IDL.Vec(DownloadItem)], ['query']),
+  'getAllMembershipApplications' : IDL.Func(
+      [],
+      [IDL.Vec(MembershipApplication)],
+      ['query'],
+    ),
+  'getAllNewsPosts' : IDL.Func([], [IDL.Vec(NewsPost)], ['query']),
   'getAllSongs' : IDL.Func([], [IDL.Vec(Song)], ['query']),
+  'getByCategory' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'lent' : IDL.Vec(Song),
+          'easter' : IDL.Vec(Song),
+          'mass_songs' : IDL.Vec(Song),
+          'advent' : IDL.Vec(Song),
+          'marian_hymns' : IDL.Vec(Song),
+          'general_devotion' : IDL.Vec(Song),
+        }),
+      ],
+      ['query'],
+    ),
+  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getDevotionalPrayer' : IDL.Func([IDL.Nat], [DevotionalPrayer], ['query']),
+  'getDownloadItem' : IDL.Func([DownloadItemId], [DownloadItem], ['query']),
+  'getNewsPost' : IDL.Func([NewsPostId], [NewsPost], ['query']),
   'getSong' : IDL.Func([SongId], [Song], ['query']),
   'getSongsByCategory' : IDL.Func([Type], [IDL.Vec(Song)], ['query']),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'searchDevotionalPrayers' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(DevotionalPrayer)],
+      ['query'],
+    ),
+  'searchMembershipApplications' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(MembershipApplication)],
+      ['query'],
+    ),
   'searchSongsByTitle' : IDL.Func([IDL.Text], [IDL.Vec(Song)], ['query']),
+  'submitMembershipApplication' : IDL.Func(
+      [MembershipApplicationInput],
+      [MembershipId],
+      [],
+    ),
+  'updateNewsPost' : IDL.Func([NewsPostId, NewsPostInput], [], []),
   'updateSong' : IDL.Func([SongId, SongInput], [], []),
 });
 
@@ -111,11 +216,19 @@ export const idlFactory = ({ IDL }) => {
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const DownloadItemInput = IDL.Record({
+    'title' : IDL.Text,
+    'fileBlob' : ExternalBlob,
+    'description' : IDL.Text,
+  });
+  const DownloadItemId = IDL.Nat;
+  const NewsPostInput = IDL.Record({ 'title' : IDL.Text, 'body' : IDL.Text });
+  const NewsPostId = IDL.Nat;
   const Section = IDL.Record({
     'title' : IDL.Text,
     'lyrics' : IDL.Vec(IDL.Text),
   });
-  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const Type = IDL.Variant({
     'lent' : IDL.Null,
     'easter' : IDL.Null,
@@ -137,7 +250,36 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const MembershipId = IDL.Nat;
+  const DevotionalPrayer = IDL.Record({
+    'id' : IDL.Nat,
+    'title' : IDL.Text,
+    'content' : IDL.Vec(Section),
+  });
   const Time = IDL.Int;
+  const DownloadItem = IDL.Record({
+    'id' : DownloadItemId,
+    'title' : IDL.Text,
+    'createdAt' : Time,
+    'fileBlob' : ExternalBlob,
+    'description' : IDL.Text,
+  });
+  const MembershipApplication = IDL.Record({
+    'id' : MembershipId,
+    'name' : IDL.Text,
+    'submittedAt' : Time,
+    'email' : IDL.Text,
+    'message' : IDL.Text,
+    'phone' : IDL.Text,
+    'parish' : IDL.Text,
+  });
+  const NewsPost = IDL.Record({
+    'id' : NewsPostId,
+    'title' : IDL.Text,
+    'body' : IDL.Text,
+    'createdAt' : Time,
+    'updatedAt' : Time,
+  });
   const Song = IDL.Record({
     'id' : SongId,
     'title' : IDL.Text,
@@ -147,6 +289,14 @@ export const idlFactory = ({ IDL }) => {
     'updatedAt' : Time,
     'musicSheet' : IDL.Opt(ExternalBlob),
     'category' : Type,
+  });
+  const UserProfile = IDL.Record({ 'name' : IDL.Text });
+  const MembershipApplicationInput = IDL.Record({
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+    'message' : IDL.Text,
+    'phone' : IDL.Text,
+    'parish' : IDL.Text,
   });
   
   return IDL.Service({
@@ -177,15 +327,72 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addDownloadItem' : IDL.Func([DownloadItemInput], [DownloadItemId], []),
+    'addNewsPost' : IDL.Func([NewsPostInput], [NewsPostId], []),
     'addSong' : IDL.Func([SongInput], [SongId], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'deleteDownloadItem' : IDL.Func([DownloadItemId], [], []),
+    'deleteMembershipApplication' : IDL.Func([MembershipId], [], []),
+    'deleteNewsPost' : IDL.Func([NewsPostId], [], []),
     'deleteSong' : IDL.Func([SongId], [], []),
+    'getAllDevotionalPrayers' : IDL.Func(
+        [],
+        [IDL.Vec(DevotionalPrayer)],
+        ['query'],
+      ),
+    'getAllDownloadItems' : IDL.Func([], [IDL.Vec(DownloadItem)], ['query']),
+    'getAllMembershipApplications' : IDL.Func(
+        [],
+        [IDL.Vec(MembershipApplication)],
+        ['query'],
+      ),
+    'getAllNewsPosts' : IDL.Func([], [IDL.Vec(NewsPost)], ['query']),
     'getAllSongs' : IDL.Func([], [IDL.Vec(Song)], ['query']),
+    'getByCategory' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'lent' : IDL.Vec(Song),
+            'easter' : IDL.Vec(Song),
+            'mass_songs' : IDL.Vec(Song),
+            'advent' : IDL.Vec(Song),
+            'marian_hymns' : IDL.Vec(Song),
+            'general_devotion' : IDL.Vec(Song),
+          }),
+        ],
+        ['query'],
+      ),
+    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getDevotionalPrayer' : IDL.Func([IDL.Nat], [DevotionalPrayer], ['query']),
+    'getDownloadItem' : IDL.Func([DownloadItemId], [DownloadItem], ['query']),
+    'getNewsPost' : IDL.Func([NewsPostId], [NewsPost], ['query']),
     'getSong' : IDL.Func([SongId], [Song], ['query']),
     'getSongsByCategory' : IDL.Func([Type], [IDL.Vec(Song)], ['query']),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'searchDevotionalPrayers' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(DevotionalPrayer)],
+        ['query'],
+      ),
+    'searchMembershipApplications' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(MembershipApplication)],
+        ['query'],
+      ),
     'searchSongsByTitle' : IDL.Func([IDL.Text], [IDL.Vec(Song)], ['query']),
+    'submitMembershipApplication' : IDL.Func(
+        [MembershipApplicationInput],
+        [MembershipId],
+        [],
+      ),
+    'updateNewsPost' : IDL.Func([NewsPostId, NewsPostInput], [], []),
     'updateSong' : IDL.Func([SongId, SongInput], [], []),
   });
 };

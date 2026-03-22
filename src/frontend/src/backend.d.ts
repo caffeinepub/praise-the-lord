@@ -14,8 +14,54 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
+export interface MembershipApplication {
+    id: MembershipId;
+    name: string;
+    submittedAt: Time;
+    email: string;
+    message: string;
+    phone: string;
+    parish: string;
+}
 export type Time = bigint;
 export type SongId = bigint;
+export type MembershipId = bigint;
+export interface MembershipApplicationInput {
+    name: string;
+    email: string;
+    message: string;
+    phone: string;
+    parish: string;
+}
+export type NewsPostId = bigint;
+export interface DevotionalPrayer {
+    id: bigint;
+    title: string;
+    content: Array<Section>;
+}
+export interface NewsPost {
+    id: NewsPostId;
+    title: string;
+    body: string;
+    createdAt: Time;
+    updatedAt: Time;
+}
+export interface DownloadItemInput {
+    title: string;
+    fileBlob: ExternalBlob;
+    description: string;
+}
+export interface NewsPostInput {
+    title: string;
+    body: string;
+}
+export interface DownloadItem {
+    id: DownloadItemId;
+    title: string;
+    createdAt: Time;
+    fileBlob: ExternalBlob;
+    description: string;
+}
 export interface Song {
     id: SongId;
     title: string;
@@ -26,6 +72,7 @@ export interface Song {
     musicSheet?: ExternalBlob;
     category: Type;
 }
+export type DownloadItemId = bigint;
 export interface SongInput {
     title: string;
     lyrics: Array<Section>;
@@ -36,6 +83,9 @@ export interface SongInput {
 export interface Section {
     title: string;
     lyrics: Array<string>;
+}
+export interface UserProfile {
+    name: string;
 }
 export enum Type {
     lent = "lent",
@@ -51,14 +101,41 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
+    addDownloadItem(downloadItemInput: DownloadItemInput): Promise<DownloadItemId>;
+    addNewsPost(newsPostInput: NewsPostInput): Promise<NewsPostId>;
     addSong(songInput: SongInput): Promise<SongId>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    deleteDownloadItem(id: DownloadItemId): Promise<void>;
+    deleteMembershipApplication(id: MembershipId): Promise<void>;
+    deleteNewsPost(id: NewsPostId): Promise<void>;
     deleteSong(id: SongId): Promise<void>;
+    getAllDevotionalPrayers(): Promise<Array<DevotionalPrayer>>;
+    getAllDownloadItems(): Promise<Array<DownloadItem>>;
+    getAllMembershipApplications(): Promise<Array<MembershipApplication>>;
+    getAllNewsPosts(): Promise<Array<NewsPost>>;
     getAllSongs(): Promise<Array<Song>>;
+    getByCategory(): Promise<{
+        lent: Array<Song>;
+        easter: Array<Song>;
+        mass_songs: Array<Song>;
+        advent: Array<Song>;
+        marian_hymns: Array<Song>;
+        general_devotion: Array<Song>;
+    }>;
+    getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getDevotionalPrayer(id: bigint): Promise<DevotionalPrayer>;
+    getDownloadItem(id: DownloadItemId): Promise<DownloadItem>;
+    getNewsPost(id: NewsPostId): Promise<NewsPost>;
     getSong(id: SongId): Promise<Song>;
     getSongsByCategory(category: Type): Promise<Array<Song>>;
+    getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
+    saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    searchDevotionalPrayers(searchTerm: string): Promise<Array<DevotionalPrayer>>;
+    searchMembershipApplications(searchTerm: string): Promise<Array<MembershipApplication>>;
     searchSongsByTitle(searchTerm: string): Promise<Array<Song>>;
+    submitMembershipApplication(applicationInput: MembershipApplicationInput): Promise<MembershipId>;
+    updateNewsPost(id: NewsPostId, newsPostInput: NewsPostInput): Promise<void>;
     updateSong(id: SongId, songInput: SongInput): Promise<void>;
 }

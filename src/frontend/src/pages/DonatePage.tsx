@@ -8,7 +8,7 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { useIsAdmin } from "../hooks/useQueries";
 
-const USSD_CODE = "*182*8*1*1177059#";
+const USSD_CODE = "*182*1*1*1177059#";
 
 const STEPS = [
   {
@@ -93,13 +93,13 @@ export default function DonatePage({ navigate }: DonatePageProps) {
                   <p className="font-bold text-foreground text-sm tracking-wide uppercase">
                     MTN Mobile Money
                   </p>
-                  <p className="text-xs text-foreground/70">Uganda</p>
+                  <p className="text-xs text-foreground/70">Rwanda</p>
                 </div>
               </div>
 
               <div className="bg-card px-6 py-6">
                 <p className="text-sm text-muted-foreground mb-3 text-center">
-                  Dial this USSD code on your MTN line to donate:
+                  Dial this USSD code on your MTN Rwanda line to donate:
                 </p>
 
                 {/* USSD Code Display */}

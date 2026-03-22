@@ -10,7 +10,51 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface DevotionalPrayer {
+  'id' : bigint,
+  'title' : string,
+  'content' : Array<Section>,
+}
+export interface DownloadItem {
+  'id' : DownloadItemId,
+  'title' : string,
+  'createdAt' : Time,
+  'fileBlob' : ExternalBlob,
+  'description' : string,
+}
+export type DownloadItemId = bigint;
+export interface DownloadItemInput {
+  'title' : string,
+  'fileBlob' : ExternalBlob,
+  'description' : string,
+}
 export type ExternalBlob = Uint8Array;
+export interface MembershipApplication {
+  'id' : MembershipId,
+  'name' : string,
+  'submittedAt' : Time,
+  'email' : string,
+  'message' : string,
+  'phone' : string,
+  'parish' : string,
+}
+export interface MembershipApplicationInput {
+  'name' : string,
+  'email' : string,
+  'message' : string,
+  'phone' : string,
+  'parish' : string,
+}
+export type MembershipId = bigint;
+export interface NewsPost {
+  'id' : NewsPostId,
+  'title' : string,
+  'body' : string,
+  'createdAt' : Time,
+  'updatedAt' : Time,
+}
+export type NewsPostId = bigint;
+export interface NewsPostInput { 'title' : string, 'body' : string }
 export interface Section { 'title' : string, 'lyrics' : Array<string> }
 export interface Song {
   'id' : SongId,
@@ -37,6 +81,7 @@ export type Type = { 'lent' : null } |
   { 'advent' : null } |
   { 'marian_hymns' : null } |
   { 'general_devotion' : null };
+export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -68,15 +113,54 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addDownloadItem' : ActorMethod<[DownloadItemInput], DownloadItemId>,
+  'addNewsPost' : ActorMethod<[NewsPostInput], NewsPostId>,
   'addSong' : ActorMethod<[SongInput], SongId>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'deleteDownloadItem' : ActorMethod<[DownloadItemId], undefined>,
+  'deleteMembershipApplication' : ActorMethod<[MembershipId], undefined>,
+  'deleteNewsPost' : ActorMethod<[NewsPostId], undefined>,
   'deleteSong' : ActorMethod<[SongId], undefined>,
+  'getAllDevotionalPrayers' : ActorMethod<[], Array<DevotionalPrayer>>,
+  'getAllDownloadItems' : ActorMethod<[], Array<DownloadItem>>,
+  'getAllMembershipApplications' : ActorMethod<
+    [],
+    Array<MembershipApplication>
+  >,
+  'getAllNewsPosts' : ActorMethod<[], Array<NewsPost>>,
   'getAllSongs' : ActorMethod<[], Array<Song>>,
+  'getByCategory' : ActorMethod<
+    [],
+    {
+      'lent' : Array<Song>,
+      'easter' : Array<Song>,
+      'mass_songs' : Array<Song>,
+      'advent' : Array<Song>,
+      'marian_hymns' : Array<Song>,
+      'general_devotion' : Array<Song>,
+    }
+  >,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getDevotionalPrayer' : ActorMethod<[bigint], DevotionalPrayer>,
+  'getDownloadItem' : ActorMethod<[DownloadItemId], DownloadItem>,
+  'getNewsPost' : ActorMethod<[NewsPostId], NewsPost>,
   'getSong' : ActorMethod<[SongId], Song>,
   'getSongsByCategory' : ActorMethod<[Type], Array<Song>>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'searchDevotionalPrayers' : ActorMethod<[string], Array<DevotionalPrayer>>,
+  'searchMembershipApplications' : ActorMethod<
+    [string],
+    Array<MembershipApplication>
+  >,
   'searchSongsByTitle' : ActorMethod<[string], Array<Song>>,
+  'submitMembershipApplication' : ActorMethod<
+    [MembershipApplicationInput],
+    MembershipId
+  >,
+  'updateNewsPost' : ActorMethod<[NewsPostId, NewsPostInput], undefined>,
   'updateSong' : ActorMethod<[SongId, SongInput], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
