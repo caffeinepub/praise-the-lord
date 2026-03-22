@@ -21,16 +21,18 @@ module {
     };
   };
 
-  // First principal that calls this function becomes admin, all other principals become users.
+  // Any principal that provides the correct admin token becomes admin.
+  // This allows the real admin to reclaim access at any time.
   public func initialize(state : AccessControlState, caller : Principal, adminToken : Text, userProvidedToken : Text) {
     if (caller.isAnonymous()) { return };
-    switch (state.userRoles.get(caller)) {
-      case (?_) {};
-      case (null) {
-        if (not state.adminAssigned and userProvidedToken == adminToken) {
-          state.userRoles.add(caller, #admin);
-          state.adminAssigned := true;
-        } else {
+    if (userProvidedToken == adminToken) {
+      // Remove any previous admin and set this caller as admin
+      state.userRoles.add(caller, #admin);
+      state.adminAssigned := true;
+    } else {
+      switch (state.userRoles.get(caller)) {
+        case (?_) {}; // already registered, keep role
+        case (null) {
           state.userRoles.add(caller, #user);
         };
       };
@@ -55,13 +57,21 @@ module {
   };
 
   public func hasPermission(state : AccessControlState, caller : Principal, requiredRole : UserRole) : Bool {
-    let userRole = getUserRole(state, caller);
-    if (userRole == #admin or requiredRole == #guest) { true } else {
-      userRole == requiredRole;
+    if (caller.isAnonymous()) { return requiredRole == #guest };
+    switch (state.userRoles.get(caller)) {
+      case (?role) {
+        if (role == #admin or requiredRole == #guest) { true } else {
+          role == requiredRole;
+        };
+      };
+      case (null) { false };
     };
   };
 
   public func isAdmin(state : AccessControlState, caller : Principal) : Bool {
-    getUserRole(state, caller) == #admin;
+    switch (state.userRoles.get(caller)) {
+      case (?#admin) { true };
+      case (_) { false };
+    };
   };
 };

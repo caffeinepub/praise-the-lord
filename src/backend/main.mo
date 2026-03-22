@@ -15,6 +15,7 @@ import MixinStorage "blob-storage/Mixin";
 import AccessControl "authorization/access-control";
 
 
+
 actor {
   module Category {
     public type Type = {
@@ -121,6 +122,12 @@ actor {
 
   type MembershipId = Nat;
 
+  type MembershipStatus = {
+    #pending;
+    #approved;
+    #rejected;
+  };
+
   type MembershipApplication = {
     id : MembershipId;
     name : Text;
@@ -128,6 +135,7 @@ actor {
     phone : Text;
     parish : Text;
     message : Text;
+    status : MembershipStatus;
     submittedAt : Time.Time;
   };
 
@@ -468,10 +476,29 @@ actor {
       phone = applicationInput.phone;
       parish = applicationInput.parish;
       message = applicationInput.message;
+      status = #pending;
       submittedAt = Time.now();
     };
     membershipApplications.add(id, application);
     id;
+  };
+
+  public shared ({ caller }) func approveMembershipApplication(id : MembershipId) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can approve membership applications");
+    };
+    let existingApplication = getMembershipApplicationInternal(id);
+    let updatedApplication = { existingApplication with status = #approved };
+    membershipApplications.add(id, updatedApplication);
+  };
+
+  public shared ({ caller }) func rejectMembershipApplication(id : MembershipId) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admin can reject membership applications");
+    };
+    let existingApplication = getMembershipApplicationInternal(id);
+    let updatedApplication = { existingApplication with status = #rejected };
+    membershipApplications.add(id, updatedApplication);
   };
 
   public shared ({ caller }) func deleteMembershipApplication(id : MembershipId) : async () {

@@ -40,6 +40,9 @@ import {
   Shield,
   Trash2,
   Upload,
+  UserCheck,
+  UserX,
+  Users,
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -48,6 +51,9 @@ import { toast } from "sonner";
 import type { Page } from "../App";
 import {
   ExternalBlob,
+  type MembershipApplication,
+  type MembershipId,
+  MembershipStatus,
   type NewsPost,
   type NewsPostId,
   type Section,
@@ -64,17 +70,21 @@ import {
   useAddNewsPost,
   useAddSong,
   useAllDownloadItems,
+  useAllMembershipApplications,
   useAllNewsPosts,
   useAllSongs,
+  useApproveMembershipApplication,
   useDeleteDownloadItem,
+  useDeleteMembershipApplication,
   useDeleteNewsPost,
   useDeleteSong,
   useIsAdmin,
+  useRejectMembershipApplication,
   useUpdateNewsPost,
   useUpdateSong,
 } from "../hooks/useQueries";
 
-const ADMIN_CODE = "JD@PTL2026";
+const ADMIN_CODE = "PTL@ADMIN2026";
 
 const CATEGORY_OPTIONS: { value: Type; label: string }[] = [
   { value: Type.mass_songs, label: "Mass Songs" },
@@ -339,6 +349,14 @@ function AdminTabs({ onLogout }: { onLogout: () => void }) {
             <Download className="h-4 w-4" />
             Downloads
           </TabsTrigger>
+          <TabsTrigger
+            value="applications"
+            className="gap-2"
+            data-ocid="admin.tab"
+          >
+            <Users className="h-4 w-4" />
+            Applications
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="songs">
@@ -349,6 +367,9 @@ function AdminTabs({ onLogout }: { onLogout: () => void }) {
         </TabsContent>
         <TabsContent value="downloads">
           <DownloadsTab />
+        </TabsContent>
+        <TabsContent value="applications">
+          <ApplicationsTab />
         </TabsContent>
       </Tabs>
     </motion.div>
@@ -1318,6 +1339,219 @@ function DownloadsTab() {
                 </AlertDialogContent>
               </AlertDialog>
             </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Applications Tab ─────────────────────────────────────────────────────────
+
+function ApplicationsTab() {
+  const { data: applications, isLoading } = useAllMembershipApplications();
+  const approve = useApproveMembershipApplication();
+  const reject = useRejectMembershipApplication();
+  const deleteApp = useDeleteMembershipApplication();
+
+  function formatDate(nanoseconds: bigint) {
+    const ms = Number(nanoseconds) / 1_000_000;
+    return new Date(ms).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  function statusBadge(status: MembershipStatus) {
+    if (status === MembershipStatus.approved) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+          <UserCheck className="h-3 w-3" />
+          Approved
+        </span>
+      );
+    }
+    if (status === MembershipStatus.rejected) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+          <UserX className="h-3 w-3" />
+          Rejected
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+        <Users className="h-3 w-3" />
+        Pending
+      </span>
+    );
+  }
+
+  async function handleApprove(id: MembershipId) {
+    try {
+      await approve.mutateAsync(id);
+      toast.success("Application approved. God bless them!");
+    } catch {
+      toast.error("Failed to approve application.");
+    }
+  }
+
+  async function handleReject(id: MembershipId) {
+    try {
+      await reject.mutateAsync(id);
+      toast.success("Application rejected.");
+    } catch {
+      toast.error("Failed to reject application.");
+    }
+  }
+
+  async function handleDelete(id: MembershipId) {
+    try {
+      await deleteApp.mutateAsync(id);
+      toast.success("Application deleted.");
+    } catch {
+      toast.error("Failed to delete application.");
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="font-display text-xl font-bold text-foreground">
+          Membership Applications
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Review and approve or reject new member applications.
+        </p>
+      </div>
+
+      <Separator className="mb-6" />
+
+      {isLoading ? (
+        <div className="space-y-3" data-ocid="admin.loading_state">
+          {["a1", "a2", "a3"].map((k) => (
+            <div key={k} className="h-24 rounded-lg bg-muted animate-pulse" />
+          ))}
+        </div>
+      ) : !applications?.length ? (
+        <div
+          className="py-16 text-center text-muted-foreground"
+          data-ocid="admin.empty_state"
+        >
+          <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
+          <p className="font-semibold">No applications yet</p>
+          <p className="text-xs mt-1">
+            New members who apply via Join Us will appear here.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3" data-ocid="admin.list">
+          {applications.map((app, idx) => (
+            <motion.div
+              key={app.id.toString()}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className="border border-border/60 rounded-lg bg-card px-4 py-4 shadow-card"
+              data-ocid={`admin.item.${idx + 1}`}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-display font-semibold text-base truncate">
+                      {app.name}
+                    </p>
+                    {statusBadge(app.status)}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
+                    <span>✉️ {app.email}</span>
+                    <span>📞 {app.phone}</span>
+                    <span>⛪ {app.parish}</span>
+                    <span>📅 {formatDate(app.submittedAt)}</span>
+                  </div>
+                  {app.message && (
+                    <p className="text-xs text-muted-foreground italic mt-1 line-clamp-2">
+                      &ldquo;{app.message}&rdquo;
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {app.status === MembershipStatus.pending && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
+                        onClick={() => handleApprove(app.id)}
+                        disabled={approve.isPending}
+                        data-ocid={`admin.confirm_button.${idx + 1}`}
+                      >
+                        {approve.isPending ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <UserCheck className="h-3.5 w-3.5" />
+                        )}
+                        Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => handleReject(app.id)}
+                        disabled={reject.isPending}
+                        data-ocid={`admin.secondary_button.${idx + 1}`}
+                      >
+                        {reject.isPending ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <UserX className="h-3.5 w-3.5" />
+                        )}
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+                        data-ocid={`admin.delete_button.${idx + 1}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent data-ocid="admin.dialog">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Application</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete the application from
+                          &ldquo;{app.name}&rdquo;? This cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel data-ocid="admin.cancel_button">
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(app.id)}
+                          disabled={deleteApp.isPending}
+                          className="bg-destructive hover:bg-destructive/90"
+                          data-ocid="admin.confirm_button"
+                        >
+                          {deleteApp.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : null}
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            </motion.div>
           ))}
         </div>
       )}

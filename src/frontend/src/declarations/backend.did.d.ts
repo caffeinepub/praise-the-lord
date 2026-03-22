@@ -31,6 +31,7 @@ export interface DownloadItemInput {
 export type ExternalBlob = Uint8Array;
 export interface MembershipApplication {
   'id' : MembershipId,
+  'status' : MembershipStatus,
   'name' : string,
   'submittedAt' : Time,
   'email' : string,
@@ -46,6 +47,9 @@ export interface MembershipApplicationInput {
   'parish' : string,
 }
 export type MembershipId = bigint;
+export type MembershipStatus = { 'pending' : null } |
+  { 'approved' : null } |
+  { 'rejected' : null };
 export interface NewsPost {
   'id' : NewsPostId,
   'title' : string,
@@ -116,6 +120,7 @@ export interface _SERVICE {
   'addDownloadItem' : ActorMethod<[DownloadItemInput], DownloadItemId>,
   'addNewsPost' : ActorMethod<[NewsPostInput], NewsPostId>,
   'addSong' : ActorMethod<[SongInput], SongId>,
+  'approveMembershipApplication' : ActorMethod<[MembershipId], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'deleteDownloadItem' : ActorMethod<[DownloadItemId], undefined>,
   'deleteMembershipApplication' : ActorMethod<[MembershipId], undefined>,
@@ -149,6 +154,7 @@ export interface _SERVICE {
   'getSongsByCategory' : ActorMethod<[Type], Array<Song>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'rejectMembershipApplication' : ActorMethod<[MembershipId], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'searchDevotionalPrayers' : ActorMethod<[string], Array<DevotionalPrayer>>,
   'searchMembershipApplications' : ActorMethod<

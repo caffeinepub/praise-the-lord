@@ -3,6 +3,8 @@ import type {
   DownloadItem,
   DownloadItemId,
   DownloadItemInput,
+  MembershipApplication,
+  MembershipId,
   NewsPost,
   NewsPostId,
   NewsPostInput,
@@ -211,6 +213,61 @@ export function useDeleteDownloadItem() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["downloads"] });
+    },
+  });
+}
+
+// Membership Applications
+export function useAllMembershipApplications() {
+  const { actor, isFetching } = useActor();
+  return useQuery<MembershipApplication[]>({
+    queryKey: ["applications"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllMembershipApplications();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useApproveMembershipApplication() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: MembershipId) => {
+      if (!actor) throw new Error("No actor");
+      return actor.approveMembershipApplication(id);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["applications"] });
+    },
+  });
+}
+
+export function useRejectMembershipApplication() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: MembershipId) => {
+      if (!actor) throw new Error("No actor");
+      return actor.rejectMembershipApplication(id);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["applications"] });
+    },
+  });
+}
+
+export function useDeleteMembershipApplication() {
+  const { actor } = useActor();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: MembershipId) => {
+      if (!actor) throw new Error("No actor");
+      return actor.deleteMembershipApplication(id);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["applications"] });
     },
   });
 }

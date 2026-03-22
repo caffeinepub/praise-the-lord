@@ -51,12 +51,12 @@ export const SongInput = IDL.Record({
   'category' : Type,
 });
 export const SongId = IDL.Nat;
+export const MembershipId = IDL.Nat;
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const MembershipId = IDL.Nat;
 export const DevotionalPrayer = IDL.Record({
   'id' : IDL.Nat,
   'title' : IDL.Text,
@@ -70,8 +70,14 @@ export const DownloadItem = IDL.Record({
   'fileBlob' : ExternalBlob,
   'description' : IDL.Text,
 });
+export const MembershipStatus = IDL.Variant({
+  'pending' : IDL.Null,
+  'approved' : IDL.Null,
+  'rejected' : IDL.Null,
+});
 export const MembershipApplication = IDL.Record({
   'id' : MembershipId,
+  'status' : MembershipStatus,
   'name' : IDL.Text,
   'submittedAt' : Time,
   'email' : IDL.Text,
@@ -136,6 +142,7 @@ export const idlService = IDL.Service({
   'addDownloadItem' : IDL.Func([DownloadItemInput], [DownloadItemId], []),
   'addNewsPost' : IDL.Func([NewsPostInput], [NewsPostId], []),
   'addSong' : IDL.Func([SongInput], [SongId], []),
+  'approveMembershipApplication' : IDL.Func([MembershipId], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'deleteDownloadItem' : IDL.Func([DownloadItemId], [], []),
   'deleteMembershipApplication' : IDL.Func([MembershipId], [], []),
@@ -181,6 +188,7 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'rejectMembershipApplication' : IDL.Func([MembershipId], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'searchDevotionalPrayers' : IDL.Func(
       [IDL.Text],
@@ -245,12 +253,12 @@ export const idlFactory = ({ IDL }) => {
     'category' : Type,
   });
   const SongId = IDL.Nat;
+  const MembershipId = IDL.Nat;
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const MembershipId = IDL.Nat;
   const DevotionalPrayer = IDL.Record({
     'id' : IDL.Nat,
     'title' : IDL.Text,
@@ -264,8 +272,14 @@ export const idlFactory = ({ IDL }) => {
     'fileBlob' : ExternalBlob,
     'description' : IDL.Text,
   });
+  const MembershipStatus = IDL.Variant({
+    'pending' : IDL.Null,
+    'approved' : IDL.Null,
+    'rejected' : IDL.Null,
+  });
   const MembershipApplication = IDL.Record({
     'id' : MembershipId,
+    'status' : MembershipStatus,
     'name' : IDL.Text,
     'submittedAt' : Time,
     'email' : IDL.Text,
@@ -330,6 +344,7 @@ export const idlFactory = ({ IDL }) => {
     'addDownloadItem' : IDL.Func([DownloadItemInput], [DownloadItemId], []),
     'addNewsPost' : IDL.Func([NewsPostInput], [NewsPostId], []),
     'addSong' : IDL.Func([SongInput], [SongId], []),
+    'approveMembershipApplication' : IDL.Func([MembershipId], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'deleteDownloadItem' : IDL.Func([DownloadItemId], [], []),
     'deleteMembershipApplication' : IDL.Func([MembershipId], [], []),
@@ -375,6 +390,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'rejectMembershipApplication' : IDL.Func([MembershipId], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'searchDevotionalPrayers' : IDL.Func(
         [IDL.Text],

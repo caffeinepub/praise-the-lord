@@ -16,6 +16,7 @@ export class ExternalBlob {
 }
 export interface MembershipApplication {
     id: MembershipId;
+    status: MembershipStatus;
     name: string;
     submittedAt: Time;
     email: string;
@@ -87,6 +88,11 @@ export interface Section {
 export interface UserProfile {
     name: string;
 }
+export enum MembershipStatus {
+    pending = "pending",
+    approved = "approved",
+    rejected = "rejected"
+}
 export enum Type {
     lent = "lent",
     easter = "easter",
@@ -104,6 +110,7 @@ export interface backendInterface {
     addDownloadItem(downloadItemInput: DownloadItemInput): Promise<DownloadItemId>;
     addNewsPost(newsPostInput: NewsPostInput): Promise<NewsPostId>;
     addSong(songInput: SongInput): Promise<SongId>;
+    approveMembershipApplication(id: MembershipId): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     deleteDownloadItem(id: DownloadItemId): Promise<void>;
     deleteMembershipApplication(id: MembershipId): Promise<void>;
@@ -131,6 +138,7 @@ export interface backendInterface {
     getSongsByCategory(category: Type): Promise<Array<Song>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
+    rejectMembershipApplication(id: MembershipId): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     searchDevotionalPrayers(searchTerm: string): Promise<Array<DevotionalPrayer>>;
     searchMembershipApplications(searchTerm: string): Promise<Array<MembershipApplication>>;

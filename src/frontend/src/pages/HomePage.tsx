@@ -9,6 +9,7 @@ import {
   Newspaper,
   Phone,
   Search,
+  Shield,
   Upload,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -169,6 +170,25 @@ export default function HomePage({ navigate }: HomePageProps) {
         </section>
 
         <div className="container mx-auto max-w-6xl px-4 py-8">
+          {/* Admin Panel Entry */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex justify-end mb-4"
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate({ name: "admin" })}
+              className="gap-2 border-primary/40 text-primary hover:bg-primary/10"
+              data-ocid="home.admin_button"
+            >
+              <Shield className="h-3.5 w-3.5" />
+              Admin Panel
+            </Button>
+          </motion.div>
+
           {/* Global Search */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
